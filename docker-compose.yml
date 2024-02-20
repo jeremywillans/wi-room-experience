@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  wi-room-experience:
+    image: jeremywillans/wi-room-experience:latest
+    #build: .
+    container_name: wi-room-experience
+    env_file:
+      - .env
+    volumes:
+      - room-experience-cache:/cache
+    restart: unless-stopped
+    networks:
+      - internal
+
+volumes:
+  room-experience-cache:
+
+networks:
+  internal:

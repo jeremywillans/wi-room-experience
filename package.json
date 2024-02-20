@@ -1,0 +1,33 @@
+{
+  "name": "wi-room-experience",
+  "version": "0.0.1",
+  "description": "Room Experience Workspace Integration",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon --ignore 'cache' app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jeremy Willans",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "axios-rate-limit": "^1.3.0",
+    "axios-retry": "3.1.9",
+    "dotenv": "^16.3.1",
+    "envalid": "^7.3.1",
+    "express": "^4.18.2",
+    "global-agent": "^3.0.0",
+    "ms": "^2.1.3",
+    "node-schedule": "^2.1.1",
+    "winston": "^3.10.0",
+    "winston-loki": "^6.0.7",
+    "winston-syslog": "^2.7.0",
+    "workspace-integrations": "^0.7.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.1"
+  }
+}

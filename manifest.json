@@ -1,0 +1,178 @@
+{
+  "id": "5a611037-8e4f-4cdf-b825-510a7afdf526",
+  "manifestVersion": 1,
+  "displayName": "Room Experience",
+  "vendor": "Jeremy Willans",
+  "email": "jwillans@cisco.com",
+  "description": "Room Experience is a Workspace Integration designed to gather user experience feedback using a survey displayed either at end of a call or initiated using a feedback button in the UI.",
+  "descriptionUrl": "https://github.com/jeremywillans/wi-room-experience",
+  "availability": "org_private",
+  "tocUrl": "",
+  "apiAccess": [
+    {
+      "scope": "spark-admin:devices_read",
+      "access": "required",
+      "role": "id_readonly_admin"
+    },
+    {
+      "scope": "spark-admin:workspaces_read",
+      "access": "required",
+      "role": "id_readonly_admin"
+    },
+    {
+      "scope": "spark:xapi_statuses",
+      "access": "required"
+    },
+    {
+      "scope": "spark:xapi_commands",
+      "access": "required"
+    },
+    {
+      "scope": "spark-admin:devices_write",
+      "access": "required"
+    }
+  ],
+  "xapiAccess": {
+    "status": [
+      {
+        "path": "SystemUnit.State.System",
+        "access": "required"
+      },
+      {
+        "path": "SystemUnit.State.NumberOfActiveCalls",
+        "access": "required"
+      },
+      {
+        "path": "SystemUnit.Software.Version",
+        "access": "required"
+      },
+      {
+        "path": "SystemUnit.Extensions.Microsoft.Supported",
+        "access": "required"
+      },
+      {
+        "path": "SystemUnit.Hardware.Module.SerialNumber",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.ContactInfo.Name",
+        "access": "required"
+      },
+      {
+        "path": "Call",
+        "access": "required"
+      },
+      {
+        "path": "MicrosoftTeams.Calling.InCall",
+        "access": "required"
+      }
+    ],
+    "commands": [
+      {
+        "path": "UserInterface.Extensions.Widget.SetValue",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Extensions.Panel.Remove",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Extensions.List",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Extensions.Panel.Save",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Extensions.Panel.Open",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Extensions.Panel.Close",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Message.Alert.Display",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Message.Prompt.Display",
+        "access": "required"
+      },
+      {
+        "path": "MicrosoftTeams.List",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Message.TextInput.Display",
+        "access": "required"
+      },
+      {
+        "path": "Macros.Macro.Remove",
+        "access": "required"
+      },
+      {
+        "path": "Macros.Macro.Save",
+        "access": "required"
+      },
+      {
+        "path": "Macros.Macro.Activate",
+        "access": "required"
+      },
+      {
+        "path": "Macros.Runtime.Restart",
+        "access": "required"
+      },
+      {
+        "path": "Macros.Macro.Get",
+        "access": "required"
+      },
+      {
+        "path": "Audio.Sound.Play",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Message.TextInput.Clear",
+        "access": "required"
+      }
+    ],
+    "events": [
+      {
+        "path": "BootEvent",
+        "access": "required"
+      },
+      {
+        "path": "CallDisconnect",
+        "access": "required"
+      },
+      {
+        "path": "OutgoingCallIndication",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Message.TextInput.Response",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Message.TextInput.Clear",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Extensions.Panel.Clicked",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Extensions.Event.PageClosed",
+        "access": "required"
+      },
+      {
+        "path": "UserInterface.Extensions.Widget.Action",
+        "access": "required"
+      }
+    ]
+  },
+  "provisioning": {
+    "type": "manual"
+  }
+}

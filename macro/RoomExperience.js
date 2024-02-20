@@ -171,7 +171,6 @@ class RoomExperience {
   constructor() {
     this.xapi = xapi;
     this.o = reOptions;
-    this.callInfo = {};
     this.sysInfo = {};
     this.isRoomOS = true;
 
@@ -183,6 +182,7 @@ class RoomExperience {
     this.skipLog = false;
     this.userInfo = {};
     this.callDestination = false;
+    this.callInfo = {};
     this.callType = '';
     this.callMatched = false;
     this.panelTimeout = null;
@@ -207,6 +207,7 @@ class RoomExperience {
     this.skipLog = false;
     this.userInfo = {};
     this.callDestination = false;
+    this.callInfo = {};
     this.callType = '';
     this.callMatched = false;
     this.panelTimeout = null;
@@ -698,6 +699,7 @@ class RoomExperience {
 
   // Close panel and Process enabled services
   async processRequest() {
+    if (this.o.logDetailed) console.debug('Processing Request');
     clearTimeout(this.panelTimeout);
     await this.xapi.command('UserInterface.Extensions.Panel.Close');
     if (this.o.httpEnabled) {
@@ -948,7 +950,8 @@ class RoomExperience {
     } else {
       if (this.callInfo.startTime) {
         try {
-          this.callInfo.Duration = Number(Date.now() - this.callInfo.startTime);
+          this.callInfo.Duration = Math.floor(Number(Date.now() - this.callInfo.startTime) / 1000);
+          if (this.o.logDetailed) console.debug(`${this.id}: MTR Call calculated duration ${this.callInfo.Duration}s`);
         } catch (error) {
           console.debug('Error calculating MTR Call Duration');
         }
@@ -1050,7 +1053,7 @@ class RoomExperience {
       this.resetVariables();
       return;
     }
-    if (this.defaultSubmit) {
+    if (this.o.defaultSubmit) {
       this.showFeedback = false;
       this.processRequest();
     }

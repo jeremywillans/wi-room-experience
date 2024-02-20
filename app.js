@@ -30,6 +30,7 @@ const e = cleanEnv(process.env, {
   RE_WEBEX_ENABLED: bool({ default: false }),
   RE_HTTP_ENABLED: bool({ default: false }),
   RE_SNOW_ENABLED: bool({ default: false }),
+  RE_MACRO_LOCAL: bool({ default: false }),
   // Integration Credentials
   CODE: str({ default: undefined }),
   OAUTH_URL: str({ default: undefined }),
@@ -216,6 +217,7 @@ async function init(json) {
   const http = utils.toTitleCase(e.RE_HTTP_ENABLED);
   const snow = utils.toTitleCase(e.RE_SNOW_ENABLED);
   logger.info(`Destinations - Webex: ${webex} | HTTP: ${http} | Service Now: ${snow}`);
+  logger.info(`Companion Macro Enabled: ${utils.toTitleCase(e.RE_MACRO_LOCAL)}`);
   let i;
   const d = {}; // Device Entities Object
   // Process integration credentials

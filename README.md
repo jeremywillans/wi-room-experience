@@ -147,7 +147,7 @@ These variables can be individually defined in Docker, loaded as an `.env` file 
 | RE_MACRO_REMOVE | no | bool | `true` | Remove macro prefixed with App Name not matching version ('wi-' is removed for panels/macros)
 | **Webex Messaging**
 | RE_WEBEX_ENABLED | no | bool | `false` | Enable for Webex Space Message Logging
-| RE_WEBEX_LOG_EXCELLENT | no | bool | `true` | Optionally log excellent results to Webex Space
+| RE_WEBEX_LOG_EXCELLENT | no | bool | `false` | Optionally log excellent results to Webex Space
 | RE_WEBEX_BOT_TOKEN | no | str | `` | Webex Bot Token for sending messages
 | RE_WEBEX_ROOM_ID | no | str | `` | Webex Room Id for sending messages
 | RE_WEBEX_FEEDBACK_ID | no | str | `` | If defined, feedback messages will be sent here.

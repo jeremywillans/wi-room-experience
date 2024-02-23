@@ -151,7 +151,7 @@ function formatType(type) {
 
 // RoomOS Version Check
 const minVersion = '11.0.0.0';
-async function versionCheck(sysVersion) {
+function versionCheck(sysVersion) {
   const reg = /^\D*(?<MAJOR>\d*)\.(?<MINOR>\d*)\.(?<EXTRA>\d*)\.(?<BUILD>\d*).*$/i;
   const x = (reg.exec(sysVersion)).groups;
   const y = (reg.exec(minVersion)).groups;
@@ -827,7 +827,7 @@ class RoomExperience {
       const systemUnit = await this.xapi.status.get('SystemUnit');
       this.sysInfo.version = systemUnit.Software.Version;
       // verify supported version
-      if (!await versionCheck(this.sysInfo.version)) throw new Error('Unsupported RoomOS');
+      if (!versionCheck(this.sysInfo.version)) throw new Error('Unsupported RoomOS');
       // Determine device mode
       // eslint-disable-next-line no-nested-ternary
       const mtrSupported = /^true$/i.test(systemUnit.Extensions ? systemUnit.Extensions.Microsoft ? systemUnit.Extensions.Microsoft.Supported : false : false);

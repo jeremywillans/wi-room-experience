@@ -2,7 +2,7 @@
 
 ## Room Experience Workspace Integration
 
-![RoomOS-Yes](https://img.shields.io/badge/RoomOS-Macro%20Only-yellow.svg?style=for-the-badge&logo=cisco) ![MTR-Macro](https://img.shields.io/badge/MTR-Macro%20Only-yellow.svg?style=for-the-badge&logo=microsoftteams)
+![RoomOS-Yes](https://img.shields.io/badge/RoomOS-Integration%20&%20Macro-green.svg?style=for-the-badge&logo=cisco) ![MTR-Macro](https://img.shields.io/badge/MTR-Macro%20Only-yellow.svg?style=for-the-badge&logo=microsoftteams)
 
 Room Experience is designed to gather user feedback using a survey displayed either at end of a call or initiated using a feedback button in the UI.
 

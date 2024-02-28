@@ -55,7 +55,7 @@ The following items are needed, depending on the enabled services.
 1. Navigate to Workspace Integrations in [Control Hub](https://admin.webex.com/workspaces/integrations)
 2. Select `Add integration` then `Upload integration` and provide included manifest.json file - ensure you document the provided credentials
 3. Navigate to the newly created Integration and select `Activate` from the `Actions` menu - ensure you document the encoded activation code
-3. Add the required Device Tag (default: `wi-room-experience`) to each device to be managed by this integration
+4. Add the required Device Tag (default: `wi-room-experience`) to each device to be managed by this integration
 
 **Webex Spaces**
 - A Webex Bot - create at [developer.webex.com](https://developer.webex.com/my-apps/new/bot) 

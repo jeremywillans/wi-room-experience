@@ -117,8 +117,10 @@ async function cleanupDevice(i, id, deviceId) {
     try {
       device = await i.devices.getDevice(deviceId);
     } catch (error) {
-      logger.warn(`${id} Unable to get device to cleanup`);
+      logger.warn(`${id} Unable to get device to cleanup, removing from cache`);
       logger.debug(error.message);
+      // remove from cache
+      deviceCache.splice(deviceCache.indexOf(deviceId), 1);
       return;
     }
     // Ensure device is online before processing

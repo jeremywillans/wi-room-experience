@@ -37,6 +37,11 @@ const reOptions = {
   webexBotToken: '', // Webex Bot Token for sending messages
   webexRoomId: '', // Webex Room Id for sending messages
   webexFeedbackId: '', // If defined, feedback messages will be sent here.
+  // MS Teams Channel Parameters
+  teamsEnabled: false, // Send message to MS Teams channel when room released
+  teamsLogExcellent: false, // Optionally log excellent results to MS Teams channel
+  teamsWebhook: '## webhookUrl ##', // URL for Teams Channel Incoming Webhook
+  teamsFeedbackWebhook: '## webhookUrl ##', // If defined, feedback messages will be sent here.
   // HTTP JSON Post Parameters
   httpEnabled: false, // Enable for JSON HTTP POST Destination
   httpUrl: 'http://localhost:3000', // HTTP Server POST URL
@@ -66,13 +71,13 @@ const reOptions = {
 
 // ----- EDIT BELOW THIS LINE AT OWN RISK ----- //
 
-const header = [
+const Header = [
   'Content-Type: application/json',
   'Accept: application/json',
 ];
-const webexHeader = [...header, `Authorization: Bearer ${reOptions.webexBotToken}`];
-const snowHeader = [...header, `Authorization: Basic ${reOptions.snowCredentials}`];
-const httpHeader = reOptions.httpAuth ? [...header, reOptions.httpHeader] : [...header];
+const webexHeader = [...Header, `Authorization: Bearer ${reOptions.webexBotToken}`];
+const snowHeader = [...Header, `Authorization: Basic ${reOptions.snowCredentials}`];
+const httpHeader = reOptions.httpAuth ? [...Header, reOptions.httpHeader] : [...Header];
 const snowIncidentUrl = `https://${reOptions.snowInstance}/api/now/table/incident`;
 const snowUserUrl = `https://${reOptions.snowInstance}/api/now/table/sys_user`;
 const snowCMDBUrl = `https://${reOptions.snowInstance}/api/now/table/cmdb_ci`;
@@ -526,6 +531,112 @@ class RoomExperience {
     }
   }
 
+  // Post content to MS Teams Channel
+  async postTeams() {
+    if (this.o.logDetailed) console.debug('Process postTeams function');
+    let color;
+    switch (this.qualityInfo.rating) {
+      case 1:
+        color = 'Good';
+        break;
+      case 2:
+        color = 'Warning';
+        break;
+      case 3:
+        color = 'Attention';
+        break;
+      default:
+        console.debug('Unhandled Response');
+    }
+
+    const cardBody = {
+      type: 'message',
+      attachments: [
+        {
+          contentType: 'application/vnd.microsoft.card.adaptive',
+          content: {
+            $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+            type: 'AdaptiveCard',
+            version: '1.3',
+            body: [
+              {
+                type: 'TextBlock',
+                text: `Room Experience ${this.feedbackReport ? 'Feedback ' : 'Call Survey'} Report - ${formatRating(this.qualityInfo.rating)}`,
+                weight: 'Bolder',
+                size: 'Medium',
+                color,
+              },
+              {
+                type: 'FactSet',
+              },
+            ],
+          },
+
+        },
+      ],
+    };
+
+    const facts = [
+      {
+        title: 'System Name',
+        value: this.sysInfo.name,
+      },
+      {
+        title: 'Serial Number',
+        value: this.sysInfo.serial,
+      },
+      {
+        title: 'SW Release',
+        value: this.sysInfo.version,
+      },
+      {
+        title: 'Source',
+        value: this.feedbackReport ? 'Feedback Button' : 'Call Survey',
+      },
+    ];
+
+    if (this.callType) facts.push({ title: 'Call Type', value: formatType(this.callType) });
+    if (this.callDestination) facts.push({ title: 'Destination', value: this.callDestination });
+    if (this.callInfo.Duration) facts.push({ title: 'Call Duration', value: formatTime(this.callInfo.Duration) });
+    if (this.callInfo.CauseType) facts.push({ title: 'Disconnect Cause', value: this.callInfo.CauseType });
+    if (this.qualityInfo.video) facts.push({ title: 'Video Rating', value: formatRating(this.qualityInfo.video) });
+    if (this.qualityInfo.audio) facts.push({ title: 'Audio Rating', value: formatRating(this.qualityInfo.audio) });
+    if (this.qualityInfo.equipment) facts.push({ title: 'Equipment Rating', value: formatRating(this.qualityInfo.equipment) });
+    if (this.qualityInfo.cleanliness) facts.push({ title: 'Cleanliness Rating', value: formatRating(this.qualityInfo.cleanliness) });
+    const voluntary = this.voluntaryRating ? 'Yes' : 'No';
+    if (this.o.defaultSubmit) facts.push({ title: 'Voluntary Rating', value: voluntary });
+    if (this.qualityInfo.incident) facts.push({ title: 'Incident Reference', value: this.qualityInfo.incident });
+
+    if (this.userInfo.sys_id) {
+      facts.push({ title: 'Reporter', value: `${this.userInfo.name} (${this.userInfo.email})` });
+    } else if (this.qualityInfo.email) {
+      // Include Provided Email if not matched in SNOW
+      facts.push({ title: 'Provided Email', value: this.qualityInfo.email });
+    }
+
+    cardBody.attachments.content.body[1].facts = facts;
+
+    if (this.qualityInfo.comments) {
+      cardBody.attachments.content.body.push({ type: 'TextBlock', text: 'Quality Comments', weight: 'Bolder' });
+      cardBody.attachments.content.body.push({ type: 'TextBlock', text: this.qualityInfo.comments, wrap: true });
+    }
+
+    try {
+      const result = await this.xapi.command('HttpClient.Post', { Header, Url: this.o.teamsWebhook }, JSON.stringify(cardBody));
+      if (/20[04]/.test(result.StatusCode)) {
+        if (this.o.logDetailed) console.debug('postTeams message sent.');
+        return;
+      }
+      console.error(`postTeams status: ${result.StatusCode}`);
+      if (result.message && this.o.logDetailed) {
+        console.debug(`${result.message}`);
+      }
+    } catch (error) {
+      console.error('postTeams error');
+      console.debug(error.message);
+    }
+  }
+
   // Post JSON content to Http Server
   async postHttp() {
     console.debug('Process postHttp function');
@@ -718,6 +829,14 @@ class RoomExperience {
       || this.qualityInfo.comments !== '') // Always post if contains Comments
     ) {
       await this.postWebex();
+    }
+    if (this.o.teamsEnabled && (
+      // Post if rating is Excellent and logging is enabled (not Feedback button)
+      (this.qualityInfo.rating === 1 && this.o.teamsLogExcellent && !this.feedbackReport)
+      || this.qualityInfo.rating !== 1 // Post if rating is Average or Poor Rating
+      || this.qualityInfo.comments !== '') // Always post if contains Comments
+    ) {
+      await this.postTeams();
     }
     await sleep(600);
     if (this.showFeedback) {

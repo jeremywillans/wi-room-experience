@@ -8,6 +8,7 @@ Room Experience is designed to gather user feedback using a survey displayed eit
 
 Captured data can be sent to the following destinations
 - Webex Messaging Space
+- MS Teams 'Team' Channel
 - HTTP Server (such as Power Bi)
 - Service Now
 
@@ -38,6 +39,9 @@ The following table outlines how responses are processed for enabled services
 | Webex | Any* | Message will be sent if Survey contains Comments
 | Webex | Excellent |  Message will be sent if `RE_WEBEX_LOG_EXCELLENT` is enabled
 | Webex | Average/Poor | Message will be sent
+| MS Teams | Any* | Message will be sent if Survey contains Comments
+| MS Teams | Excellent |  Message will be sent if `RE_TEAMS_LOG_EXCELLENT` is enabled
+| MS Teams | Average/Poor | Message will be sent
 | Service Now | Excellent | No Ticket will be raised
 | Service Now | Average | Ticket is raised if `RE_SNOW_RAISE_AVERAGE` is enabled
 | Service Now | Poor | Ticket will be raised
@@ -60,6 +64,11 @@ The following items are needed, depending on the enabled services.
 - The RoomId of the destination Webex space. These example methods can be used to get the Room Id
   - Using the [List Rooms](https://developer.webex.com/docs/api/v1/rooms/list-rooms) Developer API
   - Adding `astronaut@webex.bot` to the space (bot will leave and 1:1 you the Id)
+
+**MS Teams Channels**
+- One or Two MS Teams 'Team' Channels configured with an [Incoming Webhook](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook?#create-an-incoming-webhook)
+- Defining `RE_TEAMS_FEEDBACK_WEBHOOK` with a Webhook URL will send Feedback messages (from the Feedback button) to this separate channel from Call Survey responses
+- Copy the Webhook URLs
 
 **Service Now**
 - A User account with the `sn_incident_write` permission
@@ -151,6 +160,11 @@ These variables can be individually defined in Docker, loaded as an `.env` file 
 | RE_WEBEX_BOT_TOKEN | no | str | `` | Webex Bot Token for sending messages
 | RE_WEBEX_ROOM_ID | no | str | `` | Webex Room Id for sending messages
 | RE_WEBEX_FEEDBACK_ID | no | str | `` | If defined, feedback messages will be sent here.
+| **MS Teams Messaging**
+| RE_TEAMS_ENABLED | no | bool | `false` | Send message to MS Teams channel when room released
+| RE_TEAMS_LOG_EXCELLENT | no | bool | `false` | Optionally log excellent results to MS Teams channel
+| RE_TEAMS_WEBHOOK | no | str | ` ` | URL for Teams Channel Incoming Webhook
+| RE_TEAMS_FEEDBACK_WEBHOOK | no | str | `` | If defined, feedback messages will be sent here.
 | **HTTP Server**
 | RE_HTTP_ENABLED | no | bool | `false` | Enable for JSON HTTP POST Destination
 | RE_HTTP_URL | no | str | `http://localhost:3000` | HTTP Server POST URL

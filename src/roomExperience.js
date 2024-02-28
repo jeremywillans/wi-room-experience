@@ -765,11 +765,11 @@ class RoomExperience {
       facts.push({ title: 'Provided Email', value: this.qualityInfo.email });
     }
 
-    cardBody.attachments.content.body[1].facts = facts;
+    cardBody.attachments[0].content.body[1].facts = facts;
 
     if (this.qualityInfo.comments) {
-      cardBody.attachments.content.body.push({ type: 'TextBlock', text: 'Quality Comments', weight: 'Bolder' });
-      cardBody.attachments.content.body.push({ type: 'TextBlock', text: this.qualityInfo.comments, wrap: true });
+      cardBody.attachments[0].content.body.push({ type: 'TextBlock', text: 'Quality Comments', weight: 'Bolder' });
+      cardBody.attachments[0].content.body.push({ type: 'TextBlock', text: this.qualityInfo.comments, wrap: true });
     }
 
     try {

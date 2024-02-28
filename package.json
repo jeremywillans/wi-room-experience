@@ -1,6 +1,6 @@
 {
   "name": "wi-room-experience",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Room Experience Workspace Integration",
   "main": "app.js",
   "scripts": {

@@ -51,13 +51,13 @@ The following table outlines how responses are processed for enabled services
 
 The following items are needed, depending on the enabled services.
 
-**Workspace Integration**
+### Workspace Integration
 1. Navigate to Workspace Integrations in [Control Hub](https://admin.webex.com/workspaces/integrations)
 2. Select `Add integration` then `Upload integration` and provide included manifest.json file - ensure you document the provided credentials
 3. Navigate to the newly created Integration and select `Activate` from the `Actions` menu - ensure you document the encoded activation code
 4. Add the required Device Tag (default: `wi-room-experience`) to each device to be managed by this integration
 
-**Webex Spaces**
+### Webex Spaces
 - A Webex Bot - create at [developer.webex.com](https://developer.webex.com/my-apps/new/bot) 
 - One or two new or existing Webex Spaces with the Webex bot as a member.
 - Defining `RE_WEBEX_FEEDBACK_ID` with a Room Id will send Feedback messages (from the Feedback button) to this separate space from Call Survey responses
@@ -65,19 +65,19 @@ The following items are needed, depending on the enabled services.
   - Using the [List Rooms](https://developer.webex.com/docs/api/v1/rooms/list-rooms) Developer API
   - Adding `astronaut@webex.bot` to the space (bot will leave and 1:1 you the Id)
 
-**MS Teams Channels**
+### MS Teams Channels
 - One or Two MS Teams 'Team' Channels configured with an [Incoming Webhook](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook?#create-an-incoming-webhook)
 - Defining `RE_TEAMS_FEEDBACK_WEBHOOK` with a Webhook URL will send Feedback messages (from the Feedback button) to this separate channel from Call Survey responses
 - Copy the Webhook URLs
 
-**Service Now**
+### Service Now
 - A User account with the `sn_incident_write` permission
 - The URL of your Service Now instance
 - Credentials for the above user account, encoded in Base64 in the following format `username:password`
 - Solution optionally supports searching CMDB using Serial Number to match CI Entity
 - Extra Parameters (such as Assignment group) can also be passed to Service Now
 
-**HTTP JSON**
+### HTTP JSON
 - A remote service capable of receiving HTTP POST messages, including Power BI Streaming Dataset.
 - The following format is used for the JSON Message
   ```

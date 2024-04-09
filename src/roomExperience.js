@@ -911,7 +911,7 @@ class RoomExperience {
         let result = await this.h.getHttp(this.id, snowHeader, `${snowCMDBUrl}?sysparm_limit=1&serial_number=${this.sysInfo.serial}`);
         result = result.data.result;
         // Validate CI Data
-        if (result.length === 1) {
+        if (result && result.length === 1) {
           const [ciInfo] = result;
           messageContent.cmdb_ci = ciInfo.sys_id;
         }

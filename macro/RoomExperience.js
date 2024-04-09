@@ -760,7 +760,7 @@ class RoomExperience {
         let result = await this.xapi.command('HttpClient.Get', { Header: snowHeader, Url: `${snowCMDBUrl}?sysparm_limit=1&serial_number=${this.sysInfo.serial}` });
         result = JSON.parse(result.Body).result;
         // Validate CI Data
-        if (result.length === 1) {
+        if (result && result.length === 1) {
           const [ciInfo] = result;
           messageContent.cmdb_ci = ciInfo.sys_id;
         }

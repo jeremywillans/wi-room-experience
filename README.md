@@ -151,6 +151,7 @@ These variables can be individually defined in Docker, loaded as an `.env` file 
 | RE_FEEDBACK_ENABLED | no | bool | `true` | Include a report issue button on screen
 | RE_FEEDBACK_COLOR | no | str | `#1170CF` | Color code of button
 | RE_FEEDBACK_LOCATION | no | str | `HomeScreen` | Visible location of button (HomeScreen,HomeScreenAndCallControls,ControlPanel)
+| RE_FEEDBACK_ORDER | no | num | `1` | Order Placement of Feedback Button on Navigator
 | **Companion Macro**
 | RE_MACRO_LOCAL | no | bool | `true` | Use local companion macro for responsive UI interactions
 | RE_MACRO_REMOVE | no | bool | `true` | Remove macro prefixed with App Name not matching version ('wi-' is removed for panels/macros)

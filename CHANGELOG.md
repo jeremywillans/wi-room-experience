@@ -2,6 +2,7 @@
 
 ## 0.0.3
 - **BREAKING** Update Cache ENV entry, Storage location and file name.
+- Allow changing of Feedback button order placement
 - Bug fixes
 - Bump deps
 

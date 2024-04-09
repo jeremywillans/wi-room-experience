@@ -19,6 +19,7 @@ const e = cleanEnv(process.env, {
   RE_FEEDBACK_ENABLED: bool({ default: true }),
   RE_FEEDBACK_COLOR: str({ default: '#1170CF' }),
   RE_FEEDBACK_LOCATION: str({ default: 'HomeScreen' }),
+  RE_FEEDBACK_ORDER: num({ default: 1 }),
   // Macro Parameters
   RE_MACRO_LOCAL: bool({ default: false }),
   RE_MACRO_REMOVE: bool({ default: true }),
@@ -72,6 +73,7 @@ const reOptions = {
   buttonEnabled: e.RE_FEEDBACK_ENABLED, // Include a report issue button on screen
   buttonColor: e.RE_FEEDBACK_COLOR, // Color of button, default blue
   buttonLocation: e.RE_FEEDBACK_LOCATION, // Valid HomeScreen,HomeScreenAndCallControls,ControlPanel
+  buttonOrder: e.RE_FEEDBACK_ORDER, // Order Placement of Feedback Button on Navigator
   // Macro Parameters
   macroLocal: e.RE_MACRO_LOCAL, // Use local companion macro for responsive UI interactions
   macroRemove: e.RE_MACRO_REMOVE, // Remove macro prefixed with appName not matching version
@@ -604,7 +606,7 @@ class RoomExperience {
     <Extensions>
       <Version>1.11</Version>
       <Panel>
-        <Order>1</Order>
+        <Order>${this.o.buttonOrder}</Order>
         <PanelId>${buttonId}</PanelId>
         <Location>${isRoomOS ? this.o.buttonLocation : 'ControlPanel'}</Location>
         <Icon>Concierge</Icon>

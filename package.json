@@ -1,11 +1,11 @@
 {
   "name": "wi-room-experience",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Room Experience Workspace Integration",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon --ignore 'cache' app.js",
+    "dev": "nodemon --ignore 'config' app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jeremy Willans",

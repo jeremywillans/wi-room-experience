@@ -16,7 +16,7 @@
 // eslint-disable-next-line import/no-unresolved
 import xapi from 'xapi';
 
-const version = '0.0.2';
+const version = '0.0.3';
 // Define Room Experience options
 const reOptions = {
   // App Parameters

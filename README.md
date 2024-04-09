@@ -16,7 +16,7 @@ An overall rating is calculated based on the lowest value of the four selections
 
 Separate Webex Messaging spaces can be defined for Feedback vs Call Survey messages.
 
-This solution is available as a Workspace Integration (coming soon) as well as a standalone Macro.
+This solution is available as a Workspace Integration as well as a standalone Macro.
 
 ### Integration Notes
 

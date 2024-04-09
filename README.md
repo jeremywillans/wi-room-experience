@@ -181,7 +181,7 @@ These variables can be individually defined in Docker, loaded as an `.env` file 
 | RE_SNOW_CMDB_LOOKUP | no | bool | `false` | Lookup Device using Serial Number in Service Now
 | RE_SNOW_EXTRA | no | json | `{}` | Any extra parameters to pass to Service Now
 | **Global Settings**
-| RE_DEVICE_JSON | no | str | `cache/devices.json` | Location of device cache JSON file
+| RE_CACHE_JSON | no | str | `config/cache.json` | Location of device cache JSON file
 | RE_MIN_DURATION | no | num | `10` | Minimum call duration (seconds) before Survey is displayed
 | RE_DEFAULT_SUBMIT | no | bool | `true` | Send result if not explicitly submitted (timeout event).
 | RE_PROMPT_TITLE | no | str | `Room Experience Feedback` | Title shown on displayed prompts

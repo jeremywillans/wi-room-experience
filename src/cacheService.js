@@ -11,14 +11,14 @@ const e = cleanEnv(process.env, {
   LOG_DETAILED: bool({ default: true }),
   APP_PLATFORM: str({ default: 'local' }),
   // Device Cache JSON
-  RE_DEVICE_JSON: str({ default: 'cache/devices.json' }),
+  RE_CACHE_JSON: str({ default: 'config/cache.json' }),
 });
 
 let cachePath;
 if (e.APP_PLATFORM === 'container') {
-  cachePath = `${__dirname}/../../${e.RE_DEVICE_JSON}`;
+  cachePath = `${__dirname}/../../${e.RE_CACHE_JSON}`;
 } else {
-  cachePath = `${__dirname}/../${e.RE_DEVICE_JSON}`;
+  cachePath = `${__dirname}/../${e.RE_CACHE_JSON}`;
 }
 
 let memCache;

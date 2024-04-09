@@ -8,13 +8,13 @@ services:
     env_file:
       - .env
     volumes:
-      - room-experience-cache:/cache
+      - room-experience-config:/config
     restart: unless-stopped
     networks:
       - internal
 
 volumes:
-  room-experience-cache:
+  room-experience-config:
 
 networks:
   internal:

@@ -264,7 +264,7 @@ async function removeAllMacros(i, id, deviceId) {
           }
         }),
       );
-      await this.xapi.command(this.deviceId, 'Macros.Runtime.Restart');
+      await i.xapi.command(deviceId, 'Macros.Runtime.Restart');
     }
   }
   if (errorOutcome) {
@@ -773,7 +773,7 @@ class RoomExperience {
     }
 
     try {
-      const result = await this.xapi.command('HttpClient.Post', { Header, Url: this.o.teamsWebhook }, JSON.stringify(cardBody));
+      const result = await this.h.postHttp(this.id, Header, this.o.teamsWebhook, cardBody);
       if (/20[04]/.test(result.StatusCode)) {
         if (this.o.logDetailed) logger.debug(`${this.id}: postTeams message sent.`);
         return;
@@ -1005,7 +1005,7 @@ class RoomExperience {
       if (this.qualityInfo.incident) {
         Text += `<br>Incident ${this.qualityInfo.incident} raised.`;
       }
-      this.xapi.command('UserInterface.Message.Alert.Display', {
+      this.xapi.command(this.deviceId, 'UserInterface.Message.Alert.Display', {
         Title,
         Text,
         Duration,

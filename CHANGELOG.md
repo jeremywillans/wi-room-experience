@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.4
+- **BREAKING** Update Webex and Teams Report Webhook ENV Variables
+- Allow disabling Call processing (if only using Report Issue button)
+
 ## 0.0.3
 - **BREAKING** Update Cache ENV entry, Storage location and file name.
 - Allow changing of Feedback button order placement

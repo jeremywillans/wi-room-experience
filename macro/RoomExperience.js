@@ -36,12 +36,12 @@ const reOptions = {
   webexLogExcellent: false, // Optionally log excellent results to Webex Space
   webexBotToken: '', // Webex Bot Token for sending messages
   webexRoomId: '', // Webex Room Id for sending messages
-  webexFeedbackId: '', // If defined, feedback messages will be sent here.
+  webexReportRoomId: '', // If defined, report messages will be sent here.
   // MS Teams Channel Parameters
   teamsEnabled: false, // Send message to MS Teams channel when room released
   teamsLogExcellent: false, // Optionally log excellent results to MS Teams channel
   teamsWebhook: '## webhookUrl ##', // URL for Teams Channel Incoming Webhook
-  teamsFeedbackWebhook: '## webhookUrl ##', // If defined, feedback messages will be sent here.
+  teamsReportWebhook: '## webhookUrl ##', // If defined, report messages will be sent here.
   // HTTP JSON Post Parameters
   httpEnabled: false, // Enable for JSON HTTP POST Destination
   httpUrl: 'http://localhost:3000', // HTTP Server POST URL
@@ -507,7 +507,7 @@ class RoomExperience {
     html += '</blockquote>';
 
     let roomId = this.o.webexRoomId;
-    if (this.o.webexFeedbackId && this.o.webexFeedbackId !== '') {
+    if (this.feedbackReport && (this.o.webexReportRoomId && this.o.webexReportRoomId !== '')) {
       roomId = this.o.webexFeedbackId;
     }
 
@@ -621,8 +621,13 @@ class RoomExperience {
       cardBody.attachments[0].content.body.push({ type: 'TextBlock', text: this.qualityInfo.comments, wrap: true });
     }
 
+    let webhook = this.o.teamsWebhook;
+    if (this.feedbackReport && (this.o.teamsReportWebhook && this.o.teamsReportWebhook !== '')) {
+      webhook = this.o.teamsReportWebhook;
+    }
+
     try {
-      const result = await this.xapi.command('HttpClient.Post', { Header, Url: this.o.teamsWebhook }, JSON.stringify(cardBody));
+      const result = await this.xapi.command('HttpClient.Post', { Header, Url: webhook }, JSON.stringify(cardBody));
       if (/20[04]/.test(result.StatusCode)) {
         if (this.o.logDetailed) console.debug('postTeams message sent.');
         return;

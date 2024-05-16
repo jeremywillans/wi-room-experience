@@ -31,12 +31,12 @@ const e = cleanEnv(process.env, {
   RE_WEBEX_LOG_EXCELLENT: bool({ default: false }),
   RE_WEBEX_BOT_TOKEN: str({ default: undefined }),
   RE_WEBEX_ROOM_ID: str({ default: undefined }),
-  RE_WEBEX_FEEDBACK_ID: str({ default: undefined }),
+  RE_WEBEX_REPORT_ROOM_ID: str({ default: undefined }),
   // MS Teams Channel Parameters
   RE_TEAMS_ENABLED: bool({ default: false }),
   RE_TEAMS_LOG_EXCELLENT: bool({ default: false }),
   RE_TEAMS_WEBHOOK: str({ default: undefined }),
-  RE_TEAMS_FEEDBACK_WEBHOOK: str({ default: undefined }),
+  RE_TEAMS_REPORT_WEBHOOK: str({ default: undefined }),
   // HTTP JSON Post Parameters
   RE_HTTP_ENABLED: bool({ default: false }),
   RE_HTTP_URL: str({ default: 'http://localhost:3000' }),
@@ -660,7 +660,7 @@ class RoomExperience {
     html += '</blockquote>';
 
     let roomId = this.o.webexRoomId;
-    if (this.o.webexFeedbackId && this.o.webexFeedbackId !== '') {
+    if (this.feedbackReport && (this.o.webexReportRoomId && this.o.webexReportRoomId !== '')) {
       roomId = this.o.webexFeedbackId;
     }
 
@@ -774,8 +774,13 @@ class RoomExperience {
       cardBody.attachments[0].content.body.push({ type: 'TextBlock', text: this.qualityInfo.comments, wrap: true });
     }
 
+    let webhook = this.o.teamsWebhook;
+    if (this.feedbackReport && (this.o.teamsReportWebhook && this.o.teamsReportWebhook !== '')) {
+      webhook = this.o.teamsReportWebhook;
+    }
+
     try {
-      const result = await this.h.postHttp(this.id, Header, this.o.teamsWebhook, cardBody);
+      const result = await this.h.postHttp(this.id, Header, webhook, cardBody);
       if (/20[04]/.test(result.StatusCode)) {
         if (this.o.logDetailed) logger.debug(`${this.id}: postTeams message sent.`);
         return;

@@ -160,12 +160,12 @@ These variables can be individually defined in Docker, loaded as an `.env` file 
 | RE_WEBEX_LOG_EXCELLENT | no | bool | `false` | Optionally log excellent results to Webex Space
 | RE_WEBEX_BOT_TOKEN | no | str | `` | Webex Bot Token for sending messages
 | RE_WEBEX_ROOM_ID | no | str | `` | Webex Room Id for sending messages
-| RE_WEBEX_FEEDBACK_ID | no | str | `` | If defined, feedback messages will be sent here.
+| RE_WEBEX_REPORT_ROOM_ID | no | str | `` | If defined, report messages will be sent here.
 | **MS Teams Messaging**
 | RE_TEAMS_ENABLED | no | bool | `false` | Send message to MS Teams channel when room released
 | RE_TEAMS_LOG_EXCELLENT | no | bool | `false` | Optionally log excellent results to MS Teams channel
 | RE_TEAMS_WEBHOOK | no | str | ` ` | URL for Teams Channel Incoming Webhook
-| RE_TEAMS_FEEDBACK_WEBHOOK | no | str | `` | If defined, feedback messages will be sent here.
+| RE_TEAMS_REPORT_WEBHOOK | no | str | `` | If defined, report messages will be sent here.
 | **HTTP Server**
 | RE_HTTP_ENABLED | no | bool | `false` | Enable for JSON HTTP POST Destination
 | RE_HTTP_URL | no | str | `http://localhost:3000` | HTTP Server POST URL

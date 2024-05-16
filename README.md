@@ -144,6 +144,9 @@ These variables can be individually defined in Docker, loaded as an `.env` file 
 | **HTTP Proxy**
 | GLOBAL_AGENT_HTTP_PROXY | no | string | ` ` | Container HTTP Proxy Server (format `http://<ip or fqdn>:<port>`)
 | GLOBAL_AGENT_NO_PROXY | no | string | ` ` | Comma Separated List of excluded proxy domains (Supports wildcards)
+| **Call Options**
+| RE_CALL_ENABLED | no | bool | `true` | Should calls be processed (disable to only use button)
+| RE_MIN_DURATION | no | num | `10` | Minimum call duration (seconds) before Survey is displayed
 | **Survey Panel**
 | RE_PANEL_REMOVE | no | bool | `true` | Remove Panels prefixed with App Name not matching version ('wi-' is removed for panels/macros)
 | RE_PANEL_EMOTICONS | no | bool | `true` | Show emoticons on the panel
@@ -183,7 +186,6 @@ These variables can be individually defined in Docker, loaded as an `.env` file 
 | RE_SNOW_EXTRA | no | json | `{}` | Any extra parameters to pass to Service Now
 | **Global Settings**
 | RE_CACHE_JSON | no | str | `config/cache.json` | Location of device cache JSON file
-| RE_MIN_DURATION | no | num | `10` | Minimum call duration (seconds) before Survey is displayed
 | RE_DEFAULT_SUBMIT | no | bool | `true` | Send result if not explicitly submitted (timeout event).
 | RE_PROMPT_TITLE | no | str | `Room Experience Feedback` | Title shown on displayed prompts
 | RE_DEBUG_BUTTONS | no | bool | `false` | Enables use of debugging Actions buttons designed for testing

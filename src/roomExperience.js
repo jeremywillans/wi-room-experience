@@ -12,6 +12,9 @@ const logger = require('./logger')(__filename.slice(__dirname.length + 1, -3));
 const e = cleanEnv(process.env, {
   // App Parameters
   APP_NAME: str({ default: name }),
+  // Call Parameters
+  RE_CALL_ENABLED: bool({ default: true }),
+  RE_MIN_DURATION: num({ default: 10 }),
   // Panel Parameters
   RE_PANEL_REMOVE: bool({ default: true }),
   RE_PANEL_EMOTICONS: bool({ default: true }),
@@ -53,7 +56,6 @@ const e = cleanEnv(process.env, {
   RE_SNOW_CMDB_LOOKUP: bool({ default: false }),
   RE_SNOW_EXTRA: json({ default: {} }),
   // Global Parameters
-  RE_MIN_DURATION: num({ default: 10 }),
   RE_DEFAULT_SUBMIT: bool({ default: true }),
   RE_PROMPT_TITLE: str({ default: 'Room Experience Feedback' }),
   RE_DEBUG_BUTTONS: bool({ default: false }),
@@ -66,6 +68,9 @@ const e = cleanEnv(process.env, {
 const reOptions = {
   // App Parameters
   appName: e.APP_NAME.replace('wi-', ''), // Name used for panel prefixes and loki app name
+  // Call Parameters
+  callEnabled: e.RE_CALL_ENABLED, // Should calls be processed (disable to only use button)
+  minDuration: e.RE_MIN_DURATION, // Minimum call duration (seconds) before Survey is displayed
   // Panel Parameters
   panelRemove: e.RE_PANEL_REMOVE, // Remove panels prefixed with appName not matching version
   panelEmoticons: e.RE_PANEL_EMOTICONS, // Show emoticons on the panel
@@ -85,12 +90,12 @@ const reOptions = {
   webexLogExcellent: e.RE_WEBEX_LOG_EXCELLENT, // Optionally log excellent results to Webex Space
   webexBotToken: e.RE_WEBEX_BOT_TOKEN, // Webex Bot Token for sending messages
   webexRoomId: e.RE_WEBEX_ROOM_ID, // Webex Room Id for sending messages
-  webexFeedbackId: e.RE_WEBEX_FEEDBACK_ID, // If defined, feedback messages will be sent here.
+  webexReportRoomId: e.RE_WEBEX_REPORT_ROOM_ID, // If defined, report messages will be sent here.
   // MS Teams Channel Parameters
   teamsEnabled: e.RE_TEAMS_ENABLED, // Send message to MS Teams channel when room released
   teamsLogExcellent: e.RE_TEAMS_LOG_EXCELLENT, // Optionally log excellent results to Teams channel
   teamsWebhook: e.RE_TEAMS_WEBHOOK, // URL for Teams Channel Incoming Webhook
-  teamsFeedbackWebhook: e.RE_TEAMS_FEEDBACK_WEBHOOK, // If defined, feedback messages sent here
+  teamsReportWebhook: e.RE_TEAMS_REPORT_WEBHOOK, // If defined, report messages sent here
   // HTTP JSON Post Parameters
   httpEnabled: e.RE_HTTP_ENABLED, // Enable for JSON HTTP POST Destination
   httpUrl: e.RE_HTTP_URL, // HTTP Server POST URL
@@ -107,7 +112,6 @@ const reOptions = {
   snowCmdbLookup: e.RE_SNOW_CMDB_LOOKUP, // Lookup Device using Serial Number in Service Now
   snowExtra: e.RE_SNOW_EXTRA, // Any extra parameters to pass to Service Now
   // Global Parameters
-  minDuration: e.RE_MIN_DURATION, // Minimum call duration (seconds) before Survey is displayed
   defaultSubmit: e.RE_DEFAULT_SUBMIT, // Send result if not explicitly submitted (timeout).
   promptTitle: e.RE_PROMPT_TITLE, // Title shown on displayed prompts.
   debugButtons: e.RE_DEBUG_BUTTONS, // Enables use of debugging Actions buttons designed for testing
@@ -1223,12 +1227,14 @@ class RoomExperience {
   // ----- xAPI Handle Functions ----- //
 
   handleCallDisconnect(event) {
+    if (!this.o.callEnabled) return;
     this.callInfo = event;
     this.callInfo.Duration = Number(event.Duration);
     this.showSurvey();
   }
 
   handleActiveCall(status) {
+    if (!this.o.callEnabled) return;
     let result = status;
     if (result && !Number.isNaN(result)) {
       result = Number(result);
@@ -1239,6 +1245,7 @@ class RoomExperience {
   }
 
   handleMTRCall(status) {
+    if (!this.o.callEnabled) return;
     const result = /^true$/i.test(status);
     if (result) {
       this.callType = 'mtr';
@@ -1257,6 +1264,7 @@ class RoomExperience {
   }
 
   handleOutgoingCallIndication() {
+    if (!this.o.callEnabled) return;
     this.processCall();
   }
 

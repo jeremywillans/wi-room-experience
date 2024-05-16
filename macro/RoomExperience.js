@@ -21,6 +21,9 @@ const version = '0.0.3';
 const reOptions = {
   // App Parameters
   appName: 'room-experience', // Name used for panel prefixes and loki app name
+  // Call Parameters
+  callEnabled: true, // Should calls be processed (disable to only use button)
+  minDuration: 10, // Minimum call duration (seconds) before Survey is displayed
   // Panel Parameters
   panelRemove: true, // Remove panels prefixed with appName not matching version
   panelEmoticons: true, // Show emoticons on the panel
@@ -60,7 +63,6 @@ const reOptions = {
     // "assignment_group": "sys_id-of-assignment-group"
   },
   // Global Parameters
-  minDuration: 10, // Minimum call duration (seconds) before Survey is displayed
   defaultSubmit: true, // Send result if not explicitly submitted (timeout).
   promptTitle: 'Room Experience Feedback', // Title shown on displayed prompts.
   debugButtons: true, // Enables use of debugging Actions buttons designed for testing
@@ -1053,12 +1055,14 @@ class RoomExperience {
   // ----- xAPI Handle Functions ----- //
 
   handleCallDisconnect(event) {
+    if (!this.callEnabled) return;
     this.callInfo = event;
     this.callInfo.Duration = Number(event.Duration);
     this.showSurvey();
   }
 
   handleActiveCall(status) {
+    if (!this.callEnabled) return;
     let result = status;
     if (result && !Number.isNaN(result)) {
       result = Number(result);
@@ -1069,6 +1073,7 @@ class RoomExperience {
   }
 
   handleMTRCall(status) {
+    if (!this.callEnabled) return;
     const result = /^true$/i.test(status);
     if (result) {
       this.callType = 'mtr';
@@ -1087,6 +1092,7 @@ class RoomExperience {
   }
 
   handleOutgoingCallIndication() {
+    if (!this.callEnabled) return;
     this.processCall();
   }
 

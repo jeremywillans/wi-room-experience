@@ -16,7 +16,7 @@
 // eslint-disable-next-line import/no-unresolved
 import xapi from 'xapi';
 
-const version = '0.0.4';
+const version = '0.1.0';
 // Define Room Experience options
 const reOptions = {
   // App Parameters
@@ -121,14 +121,30 @@ async function sleep(ms) {
 // Rating Formatter
 function formatRating(rating) {
   switch (rating) {
-    case 1:
+    case 5:
       return 'Excellent';
-    case 2:
-      return 'Average';
-    case 3:
-      return 'Poor';
     case 4:
-      return 'Not-Applicable';
+    case 3:
+      return 'Average';
+    case 2:
+    case 1:
+      return 'Poor';
+    default:
+      return 'Unknown';
+  }
+}
+
+// Issue Formatter
+function formatIssue(issue) {
+  switch (issue) {
+    case 'video':
+      return 'Video Quality';
+    case 'audio':
+      return 'Audio Quality';
+    case 'equipment':
+      return 'Room Equipment';
+    case 'cleanliness':
+      return 'Room Cleanliness';
     default:
       return 'Unknown';
   }
@@ -193,18 +209,14 @@ class RoomExperience {
     this.callType = '';
     this.callMatched = false;
     this.panelTimeout = null;
-    this.feedbackReport = false;
+    this.issueReport = false;
   }
 
   // Reset variables
   resetVariables() {
     if (this.o.logDetailed) console.debug('Init Variables');
     this.qualityInfo = {
-      rating: 1,
-      audio: 1,
-      video: 1,
-      equipment: 1,
-      cleanliness: 1,
+      rating: 5,
       comments: '',
       email: '',
     };
@@ -218,11 +230,9 @@ class RoomExperience {
     this.callType = '';
     this.callMatched = false;
     this.panelTimeout = null;
-    this.feedbackReport = false;
-    this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value: '1', WidgetId: 'video_rating' });
-    this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value: '1', WidgetId: 'audio_rating' });
-    this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value: '1', WidgetId: 'room_equipment' });
-    this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value: '1', WidgetId: 'room_cleanliness' });
+    this.issueReport = false;
+    this.xapi.command('UserInterface.Extensions.Widget.UnsetValue', { WidgetId: 'issue_reason' });
+    this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value: '🌑 🌑 🌑 🌑 🌑', WidgetId: 'rating_text' });
     this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value: 'Add Comments >', WidgetId: 'comments_text' });
     this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value: 'Add Email >', WidgetId: 'email_text' });
   }
@@ -276,105 +286,42 @@ class RoomExperience {
         <Page>
           <Name>${this.o.promptTitle}</Name>
           <Row>
-            <Name>${this.o.panelEmoticons ? '📺 ' : ''}Video Rating</Name>
+            <Name>${this.o.panelEmoticons ? '💡 ' : ''}Overall Rating</Name>
             <Widget>
-              <WidgetId>video_rating</WidgetId>
-              <Type>GroupButton</Type>
-              <Options>size=4</Options>
-              <ValueSpace>
-                <Value>
-                  <Key>1</Key>
-                  <Name>${formatRating(1)}${this.o.panelEmoticons ? ' 🎉' : ''}</Name>
-                </Value>
-                <Value>
-                  <Key>2</Key>
-                  <Name>${formatRating(2)}${this.o.panelEmoticons ? ' 😐' : ''}</Name>
-                </Value>
-                <Value>
-                  <Key>3</Key>
-                  <Name>${formatRating(3)}${this.o.panelEmoticons ? ' 👎' : ''}</Name>
-                </Value>
-                <Value>
-                  <Key>4</Key>
-                  <Name>N/A${this.o.panelEmoticons ? ' 🚫' : ''}</Name>
-                </Value>
-              </ValueSpace>
+              <WidgetId>rating_text</WidgetId>
+              <Name>🌟 🌟 🌟 🌟 🌟</Name>
+              <Type>Text</Type>
+              <Options>size=3;fontSize=normal;align=center</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>rating_edit</WidgetId>
+              <Name>Edit</Name>
+              <Type>Button</Type>
+              <Options>size=1</Options>
             </Widget>
           </Row>
           <Row>
-            <Name>${this.o.panelEmoticons ? '🎙️ ' : ''}Audio Rating</Name>
+            <Name>${this.o.panelEmoticons ? '📝 ' : ''}Identify Issue</Name>
             <Widget>
-              <WidgetId>audio_rating</WidgetId>
+              <WidgetId>issue_reason</WidgetId>
               <Type>GroupButton</Type>
-              <Options>size=4</Options>
+              <Options>size=4;columns=2</Options>
               <ValueSpace>
                 <Value>
-                  <Key>1</Key>
-                  <Name>${formatRating(1)}${this.o.panelEmoticons ? ' 🎉' : ''}</Name>
+                  <Key>video</Key>
+                  <Name>${this.o.panelEmoticons ? '📺 ' : ''}Video</Name>
                 </Value>
                 <Value>
-                  <Key>2</Key>
-                  <Name>${formatRating(2)}${this.o.panelEmoticons ? ' 😐' : ''}</Name>
+                  <Key>audio</Key>
+                  <Name>${this.o.panelEmoticons ? '🎙️ ' : ''}Audio</Name>
                 </Value>
                 <Value>
-                  <Key>3</Key>
-                  <Name>${formatRating(3)}${this.o.panelEmoticons ? ' 👎' : ''}</Name>
+                  <Key>equipment</Key>
+                  <Name>${this.o.panelEmoticons ? '🍿 ' : ''}Equipment</Name>
                 </Value>
                 <Value>
-                  <Key>4</Key>
-                  <Name>N/A${this.o.panelEmoticons ? ' 🚫' : ''}</Name>
-                </Value>
-              </ValueSpace>
-            </Widget>
-          </Row>
-          <Row>
-            <Name>${this.o.panelEmoticons ? '🍿 ' : ''}Room Equipment</Name>
-            <Widget>
-              <WidgetId>room_equipment</WidgetId>
-              <Type>GroupButton</Type>
-              <Options>size=4</Options>
-              <ValueSpace>
-                <Value>
-                  <Key>1</Key>
-                  <Name>${formatRating(1)}${this.o.panelEmoticons ? ' 🎉' : ''}</Name>
-                </Value>
-                <Value>
-                  <Key>2</Key>
-                  <Name>${formatRating(2)}${this.o.panelEmoticons ? ' 😐' : ''}</Name>
-                </Value>
-                <Value>
-                  <Key>3</Key>
-                  <Name>${formatRating(3)}${this.o.panelEmoticons ? ' 👎' : ''}</Name>
-                </Value>
-                <Value>
-                  <Key>4</Key>
-                  <Name>N/A${this.o.panelEmoticons ? ' 🚫' : ''}</Name>
-                </Value>
-              </ValueSpace>
-            </Widget>
-          </Row>
-          <Row>
-            <Name>${this.o.panelEmoticons ? '🧹 ' : ''}Room Cleanliness</Name>
-            <Widget>
-              <WidgetId>room_cleanliness</WidgetId>
-              <Type>GroupButton</Type>
-              <Options>size=4;columns=4</Options>
-              <ValueSpace>
-                <Value>
-                  <Key>1</Key>
-                  <Name>${formatRating(1)}${this.o.panelEmoticons ? ' 🎉' : ''}</Name>
-                </Value>
-                <Value>
-                  <Key>2</Key>
-                  <Name>${formatRating(2)}${this.o.panelEmoticons ? ' 😐' : ''}</Name>
-                </Value>
-                <Value>
-                  <Key>3</Key>
-                  <Name>${formatRating(3)}${this.o.panelEmoticons ? ' 👎' : ''}</Name>
-                </Value>
-                <Value>
-                  <Key>4</Key>
-                  <Name>N/A${this.o.panelEmoticons ? ' 🚫' : ''}</Name>
+                  <Key>cleanliness</Key>
+                  <Name>${this.o.panelEmoticons ? '🧹 ' : ''}Cleanliness</Name>
                 </Value>
               </ValueSpace>
             </Widget>
@@ -427,7 +374,7 @@ class RoomExperience {
     await this.xapi.command('UserInterface.Extensions.Panel.Save', { PanelId: panelId }, xml);
   }
 
-  // Check Feedback button UI Status
+  // Check Report Issue button UI Status
   async checkButton() {
     let match = false;
     const config = await this.xapi.command('UserInterface.Extensions.List');
@@ -448,7 +395,7 @@ class RoomExperience {
     return match;
   }
 
-  // Add Feedback button to UI
+  // Add Report Issue button to UI
   async addButton(isRoomOS) {
     if (this.o.logDetailed) console.debug(`Adding Room Experience Button: ${buttonId}`);
     const xml = `<?xml version="1.0"?>
@@ -460,7 +407,7 @@ class RoomExperience {
         <Location>${isRoomOS ? this.o.buttonLocation : 'ControlPanel'}</Location>
         <Icon>Concierge</Icon>
         <Color>${this.o.buttonColor}</Color>
-        <Name>Feedback</Name>
+        <Name>Report Issue</Name>
         <ActivityType>Custom</ActivityType>
       </Panel>
     </Extensions>`;
@@ -473,29 +420,29 @@ class RoomExperience {
     if (this.o.logDetailed) console.debug('Process postWebex function');
     let blockquote;
     switch (this.qualityInfo.rating) {
-      case 1:
+      case 5:
         blockquote = '<blockquote class=success>';
         break;
-      case 2:
+      case 4:
+      case 3:
         blockquote = '<blockquote class=warning>';
         break;
-      case 3:
+      case 2:
+      case 1:
         blockquote = '<blockquote class=danger>';
         break;
       default:
         console.debug('Unhandled Response');
     }
 
-    let html = (`<b>Room Experience ${this.feedbackReport ? 'Feedback ' : 'Call Survey'} Report - ${formatRating(this.qualityInfo.rating)}</b>${blockquote}<b>System Name:</b> ${this.sysInfo.name}<br><b>Serial Number:</b> ${this.sysInfo.serial}<br><b>SW Release:</b> ${this.sysInfo.version}`);
-    html += `<br><b>Source:</b> ${this.feedbackReport ? 'Feedback Button' : 'Call Survey'}`;
+    let html = (`<b>Room Experience ${this.issueReport ? 'Issue ' : 'Call Survey'} Report - ${formatRating(this.qualityInfo.rating)}</b>${blockquote}<b>System Name:</b> ${this.sysInfo.name}<br><b>Serial Number:</b> ${this.sysInfo.serial}<br><b>SW Release:</b> ${this.sysInfo.version}`);
+    html += `<br><b>Source:</b> ${this.issueReport ? 'Report Issue Button' : 'Call Survey'}`;
     if (this.callType) { html += `<br><b>Call Type:</b> ${formatType(this.callType)}`; }
     if (this.callDestination) { html += `<br><b>Destination:</b> ${this.callDestination}`; }
     if (this.callInfo.Duration) { html += `<br><b>Call Duration:</b> ${formatTime(this.callInfo.Duration)}`; }
     if (this.callInfo.CauseType) { html += `<br><b>Disconnect Cause:</b> ${this.callInfo.CauseType}`; }
-    if (this.qualityInfo.video) { html += `<br><b>Video Rating:</b> ${formatRating(this.qualityInfo.video)}`; }
-    if (this.qualityInfo.audio) { html += `<br><b>Audio Rating:</b> ${formatRating(this.qualityInfo.audio)}`; }
-    if (this.qualityInfo.equipment) { html += `<br><b>Equipment Rating:</b> ${formatRating(this.qualityInfo.equipment)}`; }
-    if (this.qualityInfo.cleanliness) { html += `<br><b>Cleanliness Rating:</b> ${formatRating(this.qualityInfo.cleanliness)}`; }
+    if (this.qualityInfo.rating) { html += `<br><b>Rating:</b> ${formatRating(this.qualityInfo.rating)} (${this.qualityInfo.rating})`; }
+    if (this.qualityInfo.issue) { html += `<br><b>Issue:</b> ${formatIssue(this.qualityInfo.issue)}`; }
     if (this.qualityInfo.comments) { html += `<br><b>Quality Comments:</b> ${this.qualityInfo.comments}`; }
     const voluntary = this.voluntaryRating ? 'Yes' : 'No';
     if (this.o.defaultSubmit) { html += `<br><b>Voluntary Rating:</b> ${voluntary}`; }
@@ -509,8 +456,8 @@ class RoomExperience {
     html += '</blockquote>';
 
     let roomId = this.o.webexRoomId;
-    if (this.feedbackReport && (this.o.webexReportRoomId && this.o.webexReportRoomId !== '')) {
-      roomId = this.o.webexFeedbackId;
+    if (this.issueReport && (this.o.webexReportRoomId && this.o.webexReportRoomId !== '')) {
+      roomId = this.o.webexReportRoomId;
     }
 
     const messageContent = { roomId, html };
@@ -538,13 +485,15 @@ class RoomExperience {
     if (this.o.logDetailed) console.debug('Process postTeams function');
     let color;
     switch (this.qualityInfo.rating) {
-      case 1:
+      case 5:
         color = 'Good';
         break;
-      case 2:
+      case 4:
+      case 3:
         color = 'Warning';
         break;
-      case 3:
+      case 2:
+      case 1:
         color = 'Attention';
         break;
       default:
@@ -563,7 +512,7 @@ class RoomExperience {
             body: [
               {
                 type: 'TextBlock',
-                text: `Room Experience ${this.feedbackReport ? 'Feedback ' : 'Call Survey'} Report - ${formatRating(this.qualityInfo.rating)}`,
+                text: `Room Experience ${this.issueReport ? 'Issue ' : 'Call Survey'} Report - ${formatRating(this.qualityInfo.rating)}`,
                 weight: 'Bolder',
                 size: 'Medium',
                 color,
@@ -593,7 +542,7 @@ class RoomExperience {
       },
       {
         title: 'Source',
-        value: this.feedbackReport ? 'Feedback Button' : 'Call Survey',
+        value: this.issueReport ? 'Issue Report Button' : 'Call Survey',
       },
     ];
 
@@ -601,10 +550,8 @@ class RoomExperience {
     if (this.callDestination) facts.push({ title: 'Destination', value: this.callDestination });
     if (this.callInfo.Duration) facts.push({ title: 'Call Duration', value: formatTime(this.callInfo.Duration) });
     if (this.callInfo.CauseType) facts.push({ title: 'Disconnect Cause', value: this.callInfo.CauseType });
-    if (this.qualityInfo.video) facts.push({ title: 'Video Rating', value: formatRating(this.qualityInfo.video) });
-    if (this.qualityInfo.audio) facts.push({ title: 'Audio Rating', value: formatRating(this.qualityInfo.audio) });
-    if (this.qualityInfo.equipment) facts.push({ title: 'Equipment Rating', value: formatRating(this.qualityInfo.equipment) });
-    if (this.qualityInfo.cleanliness) facts.push({ title: 'Cleanliness Rating', value: formatRating(this.qualityInfo.cleanliness) });
+    if (this.qualityInfo.rating) facts.push({ title: 'Rating', value: `${formatRating(this.qualityInfo.rating)} (${this.qualityInfo.rating})` });
+    if (this.qualityInfo.rating) facts.push({ title: 'Issue', value: `${formatIssue(this.qualityInfo.issue)}` });
     const voluntary = this.voluntaryRating ? 'Yes' : 'No';
     if (this.o.defaultSubmit) facts.push({ title: 'Voluntary Rating', value: voluntary });
     if (this.qualityInfo.incident) facts.push({ title: 'Incident Reference', value: this.qualityInfo.incident });
@@ -624,7 +571,7 @@ class RoomExperience {
     }
 
     let webhook = this.o.teamsWebhook;
-    if (this.feedbackReport && (this.o.teamsReportWebhook && this.o.teamsReportWebhook !== '')) {
+    if (this.issueReport && (this.o.teamsReportWebhook && this.o.teamsReportWebhook !== '')) {
       webhook = this.o.teamsReportWebhook;
     }
 
@@ -652,23 +599,17 @@ class RoomExperience {
       system: this.sysInfo.name,
       serial: this.sysInfo.serial,
       version: this.sysInfo.version,
-      source: this.feedbackReport ? 'feedback' : 'call',
+      source: this.issueReport ? 'report' : 'call',
       rating: this.qualityInfo.rating,
       rating_fmt: formatRating(this.qualityInfo.rating),
-      destination: this.callDestination || '',
-      type: this.callType || '',
+      issue: this.qualityInfo.issue ? this.qualityInfo.issue : '',
+      issue_fmt: this.qualityInfo.issue ? formatIssue(this.qualityInfo.issue) : '',
+      destination: this.callDestination ? this.callDestination : '',
+      type: this.callType ? this.callType : '',
       type_fmt: this.callType !== '' ? formatType(this.callType) : '',
       duration: this.callInfo.Duration || 0,
       duration_fmt: formatTime(this.callInfo.Duration),
-      cause: this.callInfo.CauseType || '',
-      video: this.qualityInfo.video,
-      video_fmt: formatRating(this.qualityInfo.video),
-      audio: this.qualityInfo.audio,
-      audio_fmt: formatRating(this.qualityInfo.audio),
-      equipment: this.qualityInfo.equipment,
-      equipment_fmt: formatRating(this.qualityInfo.equipment),
-      cleanliness: this.qualityInfo.cleanliness,
-      cleanliness_fmt: formatRating(this.qualityInfo.cleanliness),
+      cause: this.callInfo.CauseType ? this.callInfo.CauseType : '',
       comments: this.qualityInfo.comments,
       email: this.qualityInfo.email,
       voluntary: this.voluntaryRating ? 1 : 0,
@@ -720,18 +661,15 @@ class RoomExperience {
   // Raise ticket in Service Now
   async raiseTicket() {
     if (this.o.logDetailed) console.debug('Process raiseTicket function');
-    let description = `Room Experience ${this.feedbackReport ? 'Feedback ' : 'Call Survey'} Report - ${formatRating(this.qualityInfo.rating)}\n\nSystem Name: ${this.sysInfo.name}\nSerial Number: ${this.sysInfo.serial}\nVersion: ${this.sysInfo.version}`;
-    description += `\nSource: ${this.feedbackReport ? 'Report Issue Button' : 'Call Survey'}`;
+    let description = `Room Experience ${this.issueReport ? 'Report Issue ' : 'Call Survey'} Report - ${formatRating(this.qualityInfo.rating)}\n\nSystem Name: ${this.sysInfo.name}\nSerial Number: ${this.sysInfo.serial}\nVersion: ${this.sysInfo.version}`;
+    description += `\nSource: ${this.issueReport ? 'Report Issue Button' : 'Call Survey'}`;
     if (this.callDestination) { description += `\nCall Type: ${formatType(this.callType)}`; }
     if (this.callDestination) { description += `\nDestination: \`${this.callDestination}\``; }
     if (this.callInfo.Duration) { description += `\nCall Duration: ${formatTime(this.callInfo.Duration)}`; }
     if (this.callInfo.CauseType) { description += `\nDisconnect Cause: ${this.callInfo.CauseType}`; }
-    if (this.qualityInfo.video) { description += `\n\nVideo Rating: ${formatRating(this.qualityInfo.video)}`; }
-    if (this.qualityInfo.audio) { description += `\nAudio Rating: ${formatRating(this.qualityInfo.audio)}`; }
-    if (this.qualityInfo.equipment) { description += `\nEquipment Rating: ${formatRating(this.qualityInfo.equipment)}`; }
-    if (this.qualityInfo.cleanliness) { description += `\nCleanliness Rating: ${formatRating(this.qualityInfo.cleanliness)}`; }
+    if (this.qualityInfo.rating) { description += `\n\Rating: ${formatRating(this.qualityInfo.rating)} (${this.qualityInfo.rating})`; }
     if (this.qualityInfo.comments) { description += `\nFeedback Comments: ${this.qualityInfo.comments}`; }
-    const shortDescription = `${this.sysInfo.name}: ${formatRating(this.qualityInfo.rating)} Room Experience ${this.feedbackReport ? 'Feedback ' : 'Call Survey'} Report`;
+    const shortDescription = `${this.sysInfo.name}: ${formatRating(this.qualityInfo.rating)} Room Experience ${this.issueReport ? 'Issue ' : 'Call Survey'} Report`;
 
     // Initial Construct Incident
     let messageContent = { short_description: shortDescription, description };
@@ -795,11 +733,19 @@ class RoomExperience {
     }
   }
 
+  // Show Rating Prompt
+  showRating(updateRating = false) {
+    if (updateRating) clearTimeout(this.panelTimeout);
+    const Text = updateRating ? 'Please select a new rating' : 'How was your call?';
+    xapi.command('UserInterface.Message.Rating.Display', {
+      Duration: 20, FeedbackId: updateRating ? 'rating_update' : 'rating_submit', Text, Title: this.o.promptTitle,
+    });
+  }
+
   // Show Survey Panel shown after call disconnect
-  showSurvey() {
-    if (this.callInfo.Duration > this.o.minDuration || this.feedbackReport) {
-      this.xapi.command('UserInterface.Extensions.Panel.Open', { PanelId: panelId });
-      this.setPanelTimeout();
+  activateSurvey() {
+    if (this.callInfo.Duration > this.o.minDuration || this.issueReport) {
+      this.showRating();
     } else {
       this.resetVariables();
       /*
@@ -824,23 +770,23 @@ class RoomExperience {
       this.postHttp(); // Always post result to HTTP Server if enabled
     }
     if (this.o.snowEnabled && (
-      this.qualityInfo.rating === 3 // Raise ticket if rating is Poor
+      this.qualityInfo.rating < 3 // Raise ticket if rating is Poor
       // Raise ticket for Average rating if enabled)
-      || (this.qualityInfo.rating === 2 && this.o.snowRaiseAvg))) {
+      || (this.qualityInfo.rating < 5 && this.o.snowRaiseAvg))) {
       await this.raiseTicket();
     }
     if (this.o.webexEnabled && (
-      // Post if rating is Excellent and logging is enabled (not Feedback button)
-      (this.qualityInfo.rating === 1 && this.o.webexLogExcellent && !this.feedbackReport)
-      || this.qualityInfo.rating !== 1 // Post if rating is Average or Poor Rating
+      // Post if rating is Excellent and logging is enabled (not Report button)
+      (this.qualityInfo.rating === 5 && this.o.webexLogExcellent && !this.issueReport)
+      || this.qualityInfo.rating !== 5 // Post if rating is Average or Poor Rating
       || this.qualityInfo.comments !== '') // Always post if contains Comments
     ) {
       await this.postWebex();
     }
     if (this.o.teamsEnabled && (
-      // Post if rating is Excellent and logging is enabled (not Feedback button)
-      (this.qualityInfo.rating === 1 && this.o.teamsLogExcellent && !this.feedbackReport)
-      || this.qualityInfo.rating !== 1 // Post if rating is Average or Poor Rating
+      // Post if rating is Excellent and logging is enabled (not Report button)
+      (this.qualityInfo.rating === 5 && this.o.teamsLogExcellent && !this.issueReport)
+      || this.qualityInfo.rating !== 5 // Post if rating is Average or Poor Rating
       || this.qualityInfo.comments !== '') // Always post if contains Comments
     ) {
       await this.postTeams();
@@ -864,7 +810,7 @@ class RoomExperience {
         Duration,
       });
     }
-    await sleep(3000);
+    // await sleep(3000)
     this.resetVariables();
   }
 
@@ -990,6 +936,27 @@ class RoomExperience {
     }
   }
 
+  updateRating() {
+    let Value = '';
+    const { rating } = this.qualityInfo;
+    switch (rating) {
+      case 1:
+        Value = '🌟 🌑 🌑 🌑 🌑';
+        break;
+      case 2:
+        Value = '🌟 🌟 🌑 🌑 🌑';
+        break;
+      case 3:
+        Value = '🌟 🌟 🌟 🌑 🌑';
+        break;
+      case 4:
+        Value = '🌟 🌟 🌟 🌟 🌑';
+        break;
+      default:
+    }
+    this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value, WidgetId: 'rating_text' });
+  }
+
   calculateRating() {
     const items = Object.keys(this.qualityInfo);
     let rating = 1;
@@ -1058,7 +1025,7 @@ class RoomExperience {
     if (!this.callEnabled) return;
     this.callInfo = event;
     this.callInfo.Duration = Number(event.Duration);
-    this.showSurvey();
+    this.activateSurvey();
   }
 
   handleActiveCall(status) {
@@ -1087,7 +1054,7 @@ class RoomExperience {
           console.debug('Error calculating MTR Call Duration');
         }
       }
-      this.showSurvey();
+      this.activateSurvey();
     }
   }
 
@@ -1143,12 +1110,48 @@ class RoomExperience {
     }
   }
 
+  handleRatingResponse(event) {
+    switch (event.FeedbackId) {
+      case 'rating_submit':
+      case 'rating_update':
+        if (Number.isNaN(event.Rating)) return;
+        this.qualityInfo.rating = Number(event.Rating);
+        this.updateRating();
+        if (this.qualityInfo.rating === 5) {
+          this.processRequest();
+          return;
+        }
+        this.xapi.command('UserInterface.Message.Rating.Clear', { FeedbackId: event.FeedbackId });
+        if (event.FeedbackId === 'rating_submit') {
+          this.xapi.command('UserInterface.Extensions.Panel.Open', { PanelId: panelId });
+        }
+        this.setPanelTimeout();
+        break;
+      default:
+        if (this.logUnknownResponses) console.warn(`Unexpected Rating.Response: ${event.FeedbackId}`);
+    }
+  }
+
+  handleRatingCleared(event) {
+    if (event.FeedbackId === '') return;
+    switch (event.FeedbackId) {
+      case 'rating_submit':
+      case 'rating_update':
+        this.setPanelTimeout();
+        break;
+      default:
+        if (this.logUnknownResponses) console.warn(`Unexpected Rating.Clear: ${event.FeedbackId}`);
+    }
+  }
+
   handlePanelClicked(event) {
     if (event.PanelId === buttonId) {
-      this.feedbackReport = true;
-      this.showSurvey();
+      this.issueReport = true;
+      this.xapi.command('UserInterface.Extensions.Panel.Open', { PanelId: panelId });
+      this.setPanelTimeout();
       return;
     }
+    // Continue for Test Buttons only
     if (!/(test_services|test_survey)/.test(event.PanelId)) return;
     if (!this.o.debugButtons) return;
     this.callType = this.isRoomOS ? 'webex' : 'mtr';
@@ -1159,19 +1162,14 @@ class RoomExperience {
     }
     if (event.PanelId === 'test_services') {
       this.qualityInfo.email = 'aileen.mottern@example.com';
-      this.qualityInfo.video = Math.floor(Math.random() * (4 - 1 + 1) + 1);
-      this.qualityInfo.audio = Math.floor(Math.random() * (4 - 1 + 1) + 1);
-      this.qualityInfo.equipment = Math.floor(Math.random() * (4 - 1 + 1) + 1);
-      this.qualityInfo.cleanliness = Math.floor(Math.random() * (4 - 1 + 1) + 1);
-      const q = this.qualityInfo;
-      console.debug(`Test Ratings - V:${q.video} | A:${q.audio} | E:${q.equipment} | C:${q.cleanliness}`);
-      this.calculateRating();
+      this.qualityInfo.rating = Math.floor((Math.random() * 4) + 1);
+      console.debug(`Test Rating - ${formatRating(this.qualityInfo.rating)} (${this.qualityInfo.rating})`);
       this.voluntaryRating = true;
       this.skipLog = true;
       this.processRequest();
       return;
     }
-    this.showSurvey();
+    this.showRating();
   }
 
   handlePageClosed(event) {
@@ -1180,7 +1178,7 @@ class RoomExperience {
     // ignore if survey was submitted
     if (this.voluntaryRating) return;
     // Don't process timed out report issue
-    if (this.feedbackReport) {
+    if (this.issueReport) {
       clearTimeout(this.panelTimeout);
       this.resetVariables();
       return;
@@ -1207,33 +1205,15 @@ class RoomExperience {
         this.showPrompt(event.WidgetId);
         break;
       }
-      case 'video_rating':
-        this.setPanelTimeout();
-        if (this.qualityInfo.video !== result) {
-          this.qualityInfo.video = result;
-          this.calculateRating();
-        }
+      case 'rating_edit': {
+        this.showRating(true);
         break;
-      case 'audio_rating':
+      }
+      case 'issue_reason':
         this.setPanelTimeout();
-        if (this.qualityInfo.audio !== result) {
-          this.qualityInfo.audio = result;
-          this.calculateRating();
-        }
-        break;
-      case 'room_equipment':
-        this.setPanelTimeout();
-        if (this.qualityInfo.equipment !== result) {
-          this.qualityInfo.equipment = result;
-          this.calculateRating();
-        }
-        break;
-      case 'room_cleanliness':
-        this.setPanelTimeout();
-        if (this.qualityInfo.cleanliness !== result) {
-          this.qualityInfo.cleanliness = result;
-          this.calculateRating();
-        }
+        this.qualityInfo.issue = event.Value;
+        console.log(event);
+        if (this.o.logDetailed) console.log(`Issue reason: ${event.Value}`);
         break;
       default:
         if (this.logUnknownResponses) console.warn(`Unexpected Widget.Action: ${event.WidgetId}`);
@@ -1266,6 +1246,14 @@ async function init() {
     // Process text input clear
     xapi.event.on('UserInterface.Message.TextInput.Clear', (event) => {
       re.handleTextInputClear(event);
+    });
+    // Process rating response
+    xapi.event.on('UserInterface.Message.Rating.Response', (event) => {
+      re.handleRatingResponse(event);
+    });
+    // Process rating clear
+    xapi.event.on('UserInterface.Message.Rating.Cleared', (event) => {
+      re.handleRatingCleared(event);
     });
     // Process panel clicked
     xapi.event.on('UserInterface.Extensions.Panel.Clicked', (event) => {

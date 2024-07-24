@@ -391,7 +391,7 @@ class RoomExperience {
             </Widget>
           </Row>`}
           <Row>
-            <Name>${this.o.panelEmoticons ? '📝 ' : ''}Category</Name>
+            <Name>${this.o.panelEmoticons ? '📝 ' : ''}${rating ? 'Feedback ' : ' Issue '}Category</Name>
             <Widget>
               <WidgetId>category_select</WidgetId>
               <Type>GroupButton</Type>

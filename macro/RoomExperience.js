@@ -77,9 +77,9 @@ const categories = {
     text: 'Video Issue',
     prompt: `${reOptions.panelEmoticons ? '📺 ' : ''}Video`,
     issues: [
-      { id: 'inbound-video', text: 'Issue with Remote Video' },
-      { id: 'outbound-video', text: 'Remote Participants cant see me' },
-      { id: 'video-quality', text: 'Bad Video quality' },
+      { id: 'inbound-video', text: 'Issue with remote video' },
+      { id: 'outbound-video', text: 'Remote participants cant see me' },
+      { id: 'video-quality', text: 'Bad video quality' },
       { id: 'other', text: 'Other' },
     ],
     snowExtra: {
@@ -90,9 +90,9 @@ const categories = {
     text: 'Audio Issue',
     prompt: `${reOptions.panelEmoticons ? '🎙️ ' : ''}Audio`,
     issues: [
-      { id: 'inbound-audio', text: 'Issue with Remote Audio' },
-      { id: 'outbound-audio', text: 'Remote Participants cant hear me' },
-      { id: 'audio-quality', text: 'Bad Audio quality' },
+      { id: 'inbound-audio', text: 'Issue with remote audio' },
+      { id: 'outbound-audio', text: 'Remote participants cant hear me' },
+      { id: 'audio-quality', text: 'Bad audio quality' },
       { id: 'other', text: 'Other' },
     ],
     snowExtra: {
@@ -103,9 +103,9 @@ const categories = {
     text: 'Room Equipment',
     prompt: `${reOptions.panelEmoticons ? '🍿 ' : ''}Equipment`,
     issues: [
-      { id: 'screen-issue', text: 'Screens not working' },
-      { id: 'broken-tables', text: 'Tables are broken' },
+      { id: 'equipment-issue', text: 'Equipment not working' },
       { id: 'missing-equipment', text: 'Missing equipment' },
+      // { id: 'third-item', text: 'Third Item Here' },
       { id: 'other', text: 'Other' },
     ],
     snowExtra: {
@@ -116,9 +116,9 @@ const categories = {
     text: 'Room Cleanliness',
     prompt: `${reOptions.panelEmoticons ? '🧹 ' : ''}Cleanliness`,
     issues: [
-      { id: 'missing-chairs', text: 'Missing Chairs' },
-      { id: 'coffee-cups', text: 'Coffee cups left in room' },
-      // { id: 'temp-issue', text: 'Room temperature uncomfortable' },
+      { id: 'left-items', text: 'Items left in room' },
+      { id: 'table-equipment', text: 'Dirty table or chairs' },
+      // { id: 'third-item', text: 'Third Item Here' },
       { id: 'other', text: 'Other' },
     ],
     snowExtra: {

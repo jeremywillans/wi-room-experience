@@ -53,7 +53,6 @@ const reOptions = {
   httpFormat: 'none', // HTTP Custom Formatting - none,loki,powerBi
   // Service Now Parameters
   snowEnabled: false, // Enable for Service NOW Incident Raise
-  snowRaiseAvg: true, // Raise SNOW Incident for Average Responses
   snowInstance: 'instance-name.service-now.com', // Specify the base url for Service Now
   snowCredentials: 'base-64-encoded-username:password', // Basic Auth format is "username:password" base64-encoded
   snowCallerId: '', // Default Caller for Incidents, needs to be sys_id of Caller
@@ -75,16 +74,14 @@ const reOptions = {
 const categories = {
   video: {
     text: 'Video Issue',
-    prompt: `${reOptions.panelEmoticons ? '📺 ' : ''}Video`,
+    prompt: `${reOptions.panelEmoticons ? '📹 ' : ''}Video`,
     issues: [
       { id: 'inbound-video', text: 'Issue with remote video' },
       { id: 'outbound-video', text: 'Remote participants cant see me' },
       { id: 'video-quality', text: 'Bad video quality' },
-      { id: 'other', text: 'Other' },
+      { id: 'other', text: 'Other (use Comments)' },
     ],
-    snowExtra: {
-      // assignment_group: 'sys_id-of-assignment-group',
-    },
+    // snowExtra: { assignment_group: 'sys_id-of-assignment-group' },
   },
   audio: {
     text: 'Audio Issue',
@@ -93,37 +90,35 @@ const categories = {
       { id: 'inbound-audio', text: 'Issue with remote audio' },
       { id: 'outbound-audio', text: 'Remote participants cant hear me' },
       { id: 'audio-quality', text: 'Bad audio quality' },
-      { id: 'other', text: 'Other' },
+      { id: 'other', text: 'Other (use Comments)' },
     ],
-    snowExtra: {
-      // assignment_group: 'sys_id-of-assignment-group',
-    },
+    // snowExtra: { assignment_group: 'sys_id-of-assignment-group' },
+  },
+  content: {
+    text: 'Content Issue',
+    prompt: `${reOptions.panelEmoticons ? '📺 ' : ''}Content`,
+    issues: [
+      { id: 'share-issue', text: 'Unable to share' },
+      { id: 'outbound-content', text: 'Remote participants cant see my content' },
+      { id: 'content-quality', text: 'Bad content quality' },
+      { id: 'other', text: 'Other (use Comments)' },
+    ],
+    // snowExtra: { assignment_group: 'sys_id-of-assignment-group' },
   },
   equipment: {
     text: 'Room Equipment',
-    prompt: `${reOptions.panelEmoticons ? '🍿 ' : ''}Equipment`,
+    prompt: `${reOptions.panelEmoticons ? '🪑 ' : ''}Equipment`,
     issues: [
       { id: 'equipment-issue', text: 'Equipment not working' },
       { id: 'missing-equipment', text: 'Missing equipment' },
-      // { id: 'third-item', text: 'Third Item Here' },
-      { id: 'other', text: 'Other' },
+      {
+        id: 'table-equipment',
+        text: 'Dirty table or chairs',
+        // snowExtra: { assignment_group: 'sys_id-of-assignment-group' },
+      },
+      { id: 'other', text: 'Other (use Comments)' },
     ],
-    snowExtra: {
-      // assignment_group: 'sys_id-of-assignment-group',
-    },
-  },
-  cleanliness: {
-    text: 'Room Cleanliness',
-    prompt: `${reOptions.panelEmoticons ? '🧹 ' : ''}Cleanliness`,
-    issues: [
-      { id: 'left-items', text: 'Items left in room' },
-      { id: 'table-equipment', text: 'Dirty table or chairs' },
-      // { id: 'third-item', text: 'Third Item Here' },
-      { id: 'other', text: 'Other' },
-    ],
-    snowExtra: {
-      // assignment_group: 'sys_id-of-assignment-group',
-    },
+    // snowExtra: { assignment_group: 'sys_id-of-assignment-group' },
   },
 };
 
@@ -277,6 +272,7 @@ class RoomExperience {
     this.callType = '';
     this.callMatched = false;
     this.panelTimeout = null;
+    this.raiseTicket = false;
     this.issueReport = false;
   }
 
@@ -298,10 +294,14 @@ class RoomExperience {
     this.callType = '';
     this.callMatched = false;
     this.panelTimeout = null;
+    this.raiseTicket = false;
     if (this.issueReport) {
       await this.removePanel(panelId, false);
       await this.addPanel(true, false);
       this.issueReport = false;
+    }
+    if (this.o.snowEnabled) {
+      this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value: 'off', WidgetId: 'ticket_toggle' });
     }
     this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value: '🌑 🌑 🌑 🌑 🌑', WidgetId: 'rating_text' });
     this.xapi.command('UserInterface.Extensions.Widget.UnsetValue', { WidgetId: 'category_select' });
@@ -462,6 +462,20 @@ class RoomExperience {
             </Widget>
           </Row>
           <Row>
+            ${this.o.snowEnabled ? `
+            <Name>${this.o.panelEmoticons ? '🎟️ ' : ''}Raise a Ticket?</Name>
+            <Widget>
+              <WidgetId>ticket_toggle</WidgetId>
+              <Type>ToggleButton</Type>
+              <Options>size=1</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>survey_submit</WidgetId>
+              <Name>Submit Feedback 🚀</Name>
+              <Type>Button</Type>
+              <Options>size=3</Options>
+            </Widget>
+            ` : `
             <Name>${this.o.panelEmoticons ? '🚀 ' : ''}Submit Feedback</Name>
             <Widget>
               <WidgetId>survey_submit</WidgetId>
@@ -469,6 +483,7 @@ class RoomExperience {
               <Type>Button</Type>
               <Options>size=4</Options>
             </Widget>
+            `}
           </Row>
           <PageId>${panelId}-survey</PageId>
           <Options>hideRowNames=0</Options>
@@ -783,9 +798,9 @@ class RoomExperience {
     }
   }
 
-  // Raise ticket in Service Now
-  async raiseTicket() {
-    if (this.o.logDetailed) console.debug('Process raiseTicket function');
+  // Post Incident to Service Now
+  async postIncident() {
+    if (this.o.logDetailed) console.debug('Process postIncident function');
     let description = `Room Experience ${this.issueReport ? 'Report Issue ' : 'Call Survey'} Report - ${this.formatRating(this.qualityInfo.rating)}\n\nSystem Name: ${this.sysInfo.name}\nSerial Number: ${this.sysInfo.serial}\nVersion: ${this.sysInfo.version}`;
     description += `\nSource: ${this.issueReport ? 'Report Issue Button' : 'Call Survey'}`;
     if (this.callType) { description += `\nCall Type: ${formatType(this.callType)}`; }
@@ -820,7 +835,7 @@ class RoomExperience {
           messageContent.description += `\nProvided Email: ${this.qualityInfo.email}}`;
         }
       } catch (error) {
-        console.error('raiseTicket getUser error encountered');
+        console.error('postIncident getUser error encountered');
         console.debug(error.message);
       }
     }
@@ -840,7 +855,7 @@ class RoomExperience {
           if (this.o.logDetailed) console.debug(`SNOW CI Found - ${messageContent.cmdb_ci}`);
         }
       } catch (error) {
-        console.error('raiseTicket getCMDBCi error encountered');
+        console.error('postIncident getCMDBCi error encountered');
         console.debug(error.message);
       }
     }
@@ -850,25 +865,36 @@ class RoomExperience {
       messageContent = { ...messageContent, ...this.o.snowExtra };
     }
 
+    const q = this.qualityInfo;
+
     // Merge Extra Params from Selected Category
-    if (this.qualityInfo.category && categories[this.qualityInfo.category].snowExtra) {
-      messageContent = { ...messageContent, ...categories[this.qualityInfo.category].snowExtra };
+    if (q.category && categories[q.category].snowExtra) {
+      messageContent = { ...messageContent, ...categories[q.category].snowExtra };
+    }
+
+    // Merge Extra Params from Selected Category Issue
+    if (q.category) {
+      const issue = categories[q.category].issues.find((item) => item.id === q.issue);
+      if (issue.snowExtra) {
+        messageContent = { ...messageContent, ...issue.snowExtra };
+      }
     }
 
     // Merge Extra Params from Selected Rating
-    const ratingSnowExtra = this.formatRating(this.qualityInfo.rating, 'snowExtra');
+    const ratingSnowExtra = this.formatRating(q.rating, 'snowExtra');
     if (ratingSnowExtra) {
       messageContent = { ...messageContent, ...ratingSnowExtra };
     }
 
     try {
+      if (this.o.logDetailed) console.debug(JSON.stringify(messageContent));
       let result = await this.xapi.command('HttpClient.Post', { Header: snowHeader, Url: snowIncidentUrl }, JSON.stringify(messageContent));
       const incidentUrl = result.Headers.find((x) => x.Key === 'Location').Value;
       result = await this.xapi.command('HttpClient.Get', { Header: snowHeader, Url: incidentUrl });
       this.qualityInfo.incident = JSON.parse(result.Body).result.number;
-      if (this.o.logDetailed) console.debug(`raiseTicket successful: ${this.qualityInfo.incident}`);
+      if (this.o.logDetailed) console.debug(`postIncident successful: ${this.qualityInfo.incident}`);
     } catch (error) {
-      console.error('raiseTicket error encountered');
+      console.error('postIncident error encountered');
       console.debug(error.message);
       this.errorResult = true;
     }
@@ -911,11 +937,8 @@ class RoomExperience {
     if (this.o.httpEnabled) {
       this.postHttp(); // Always post result to HTTP Server if enabled
     }
-    if (this.o.snowEnabled && (
-      this.qualityInfo.rating < 3 // Raise ticket if rating is Poor
-      // Raise ticket for Average rating if enabled)
-      || (this.qualityInfo.rating < 5 && this.o.snowRaiseAvg))) {
-      await this.raiseTicket();
+    if (this.o.snowEnabled && this.raiseTicket) {
+      await this.postIncident();
     }
     if (this.o.webexEnabled && (
       // Post if rating is Excellent and logging is enabled
@@ -970,9 +993,11 @@ class RoomExperience {
     if (this.callMatched) {
       return;
     }
+    if (this.o.logDetailed) console.debug('Process processCall function');
     let call;
     try {
       [call] = await this.xapi.status.get('Call');
+      if (!call) return;
     } catch (error) {
       // No Active Call
       return;
@@ -1157,7 +1182,7 @@ class RoomExperience {
       if (categories[category].issues[1]) promptBody['Option.2'] = categories[category].issues[1].text;
       if (categories[category].issues[2]) promptBody['Option.3'] = categories[category].issues[2].text;
       if (categories[category].issues[3]) promptBody['Option.4'] = categories[category].issues[3].text;
-      promptBody[`Option.${categories[category].issues.length + 1}`] = 'Cancel';
+      promptBody[`Option.${categories[category].issues.length + 1}`] = this.qualityInfo.issue === '' ? 'Cancel' : 'Clear';
     } else {
       promptBody.Text = 'Please select a category first';
       promptBody.FeedbackId = 'category_submit';
@@ -1182,14 +1207,16 @@ class RoomExperience {
   // ----- xAPI Handle Functions ----- //
 
   handleCallDisconnect(event) {
-    if (!this.callEnabled) return;
+    if (!this.o.callEnabled) return;
+    if (this.o.logDetailed) console.debug('Process handleCallDisconnect function');
     this.callInfo = event;
     this.callInfo.Duration = Number(event.Duration);
     this.processDisconnect();
   }
 
   handleActiveCall(status) {
-    if (!this.callEnabled) return;
+    if (!this.o.callEnabled) return;
+    if (this.o.logDetailed) console.debug('Process handleActiveCall function');
     let result = status;
     if (result && !Number.isNaN(result)) {
       result = Number(result);
@@ -1200,7 +1227,8 @@ class RoomExperience {
   }
 
   handleMTRCall(status) {
-    if (!this.callEnabled) return;
+    if (!this.o.callEnabled) return;
+    if (this.o.logDetailed) console.debug('Process handleMTRCall function');
     const result = /^true$/i.test(status);
     if (result) {
       this.callType = 'mtr';
@@ -1219,7 +1247,8 @@ class RoomExperience {
   }
 
   handleOutgoingCallIndication() {
-    if (!this.callEnabled) return;
+    if (!this.o.callEnabled) return;
+    if (this.o.logDetailed) console.debug('Process handleOutgoingCallIndication function');
     this.processCall();
   }
 
@@ -1310,10 +1339,14 @@ class RoomExperience {
     let item;
     switch (event.FeedbackId) {
       case 'category_submit':
-        if (index === 5) return;
+        if (index === 4) {
+          this.setPanelTimeout();
+          return;
+        }
         item = catArray[index];
         if (!item) {
           console.warn(`Unknown Category Option: ${event.OptionId}`);
+          this.setPanelTimeout();
           return;
         }
         this.categorySelect(catArray[index]);
@@ -1326,10 +1359,15 @@ class RoomExperience {
           console.warn(`Unable to get Category Issues for ${this.qualityInfo.category}`);
           return;
         }
-        // Match on defined Issues or Cancel
+        // Match on defined Issues or Clear
         if (index < issues.length) {
           item = categories[this.qualityInfo.category].issues[index].id;
         } else {
+          if (this.qualityInfo.issue === '') return;
+          this.qualityInfo.issue = item;
+          if (this.o.logDetailed) console.debug('Issue cleared');
+          this.xapi.command('UserInterface.Extensions.Widget.SetValue', { Value: 'Select Issue >', WidgetId: 'issue_text' });
+          this.setPanelTimeout();
           return;
         }
         if (!item) {
@@ -1409,7 +1447,7 @@ class RoomExperience {
   }
 
   handleWidgetAction(event) {
-    if (event.Type !== 'pressed') return;
+    if (event.WidgetId !== 'ticket_toggle' && event.Type !== 'pressed') return;
     let result = event.Value;
     if (result && !Number.isNaN(result)) {
       result = Number(result);
@@ -1417,6 +1455,15 @@ class RoomExperience {
     switch (event.WidgetId) {
       case 'survey_submit':
         this.voluntaryRating = true;
+        if (this.raiseTicket && !this.qualityInfo.category) {
+          this.setPanelTimeout();
+          this.xapi.command('UserInterface.Message.Alert.Display', {
+            Title: '⚠️ Missing Category ⚠️',
+            Text: `Please select a${this.issueReport ? 'n Issue' : ' Feedback'} Category if raising a Ticket`,
+            Duration: 5,
+          });
+          return;
+        }
         this.processRequest();
         break;
       case 'issue_select':
@@ -1443,9 +1490,21 @@ class RoomExperience {
         if (this.o.logDetailed) console.debug(`Selected Severity: ${item.id}`);
         break;
       }
+      case 'ticket_toggle': {
+        this.setPanelTimeout();
+        this.raiseTicket = event.Value === 'on';
+        if (this.o.logDetailed) console.debug(`Raise Ticket: ${this.raiseTicket}`);
+        break;
+      }
       default:
         if (this.logUnknownResponses) console.warn(`Unexpected Widget.Action: ${event.WidgetId}`);
     }
+  }
+
+  handleMacroSave() {
+    console.info('Reset panel and button for Macro reload');
+    this.removePanel(panelId, false);
+    this.removePanel(buttonId, false);
   }
 }
 
@@ -1526,6 +1585,13 @@ async function init() {
     // Process MTR active call
     xapi.status.on('MicrosoftTeams.Calling.InCall', (status) => {
       re.handleMTRCall(status);
+    });
+    // Process Macro Save
+    xapi.event.on('Macros.Macro.Saved', (event) => {
+      // eslint-disable-next-line no-undef
+      if (event.Name === _main_macro_name()) {
+        re.handleMacroSave();
+      }
     });
   } catch (error) {
     console.error('Error during device and subscription processing');

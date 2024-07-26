@@ -1526,10 +1526,10 @@ function processCategories() {
 // Init function
 async function init() {
   console.info(`Room Experience Macro v${version}`);
-  if (!processCategories()) return;
   // Declare Class
   const re = new RoomExperience();
   try {
+    if (!processCategories()) throw new Error();
     // perform codec configuration
     await re.configureCodec();
 
@@ -1596,6 +1596,10 @@ async function init() {
   } catch (error) {
     console.error('Error during device and subscription processing');
     console.debug(error.message);
+    // eslint-disable-next-line no-undef
+    const Name = _main_macro_name();
+    xapi.command('Macros.Macro.Deactivate', { Name });
+    console.error(`Macro ${Name} deactivated.`);
   }
 }
 
